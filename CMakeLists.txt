@@ -14,10 +14,21 @@ set(FAULT_INJECTION_SOURCES
     src/fault_injection/fault_injector.cpp
 )
 
+# Timing analysis sources (Phase 3)
+set(TIMING_ANALYSIS_SOURCES
+    src/timing_analysis/timing_analyzer.cpp
+)
+
 # Check if fault injection directory exists
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/fault_injection")
     list(APPEND CORE_SOURCES ${FAULT_INJECTION_SOURCES})
     message(STATUS "Including fault injection module")
+endif()
+
+# Check if timing analysis directory exists
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/timing_analysis")
+    list(APPEND CORE_SOURCES ${TIMING_ANALYSIS_SOURCES})
+    message(STATUS "Including timing analysis module")
 endif()
 
 # Core framework headers
@@ -32,6 +43,11 @@ set(CORE_HEADERS
 # Add fault injection headers if available
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/fault_injection")
     list(APPEND CORE_HEADERS src/fault_injection/fault_injector.h)
+endif()
+
+# Add timing analysis headers if available  
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/timing_analysis")
+    list(APPEND CORE_HEADERS src/timing_analysis/timing_analyzer.h)
 endif()
 
 project(IVVFrameworkBCI 
@@ -86,6 +102,13 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/fault_injection")
     list(APPEND CORE_SOURCES ${FAULT_INJECTION_SOURCES})
     list(APPEND CORE_HEADERS src/fault_injection/fault_injector.h)
     message(STATUS "Fault injection module added to build")
+endif()
+
+# Add timing analysis sources and headers if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/timing_analysis")
+    list(APPEND CORE_SOURCES ${TIMING_ANALYSIS_SOURCES})
+    list(APPEND CORE_HEADERS src/timing_analysis/timing_analyzer.h)
+    message(STATUS "Timing analysis module added to build")
 endif()
 
 # Create core framework library
@@ -168,6 +191,13 @@ install(FILES ${CORE_HEADERS}
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/fault_injection")
     install(FILES src/fault_injection/fault_injector.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ivv_framework/fault_injection
+    )
+endif()
+
+# Install timing analysis headers if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/timing_analysis")
+    install(FILES src/timing_analysis/timing_analyzer.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ivv_framework/timing_analysis
     )
 endif()
 
