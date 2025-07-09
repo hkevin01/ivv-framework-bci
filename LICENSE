@@ -1,0 +1,82 @@
+MIT License
+
+Copyright (c) 2025 IV&V Framework for BCI Safety-Critical Systems
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## SAFETY-CRITICAL SYSTEM DISCLAIMER
+
+⚠️ **IMPORTANT SAFETY NOTICE** ⚠️
+
+This software is designed for verification and validation of Brain-Computer 
+Interface (BCI) safety-critical systems. While provided under the MIT License, 
+users must understand and accept additional responsibilities when using this 
+software for safety-critical applications:
+
+### REGULATORY COMPLIANCE
+- Users are responsible for ensuring compliance with applicable medical device 
+  regulations (FDA, CE marking, etc.)
+- This software does not guarantee regulatory compliance
+- Independent validation and verification may be required for clinical use
+
+### SAFETY CONSIDERATIONS
+- This framework is intended for development and testing environments
+- Never use fault injection capabilities on production systems with patients
+- All safety-critical applications must undergo proper hazard analysis
+- Users must implement appropriate safety monitoring and fail-safe mechanisms
+
+### MEDICAL DEVICE USE
+- This software has not been cleared or approved by any regulatory authority 
+  for clinical use
+- Integration with actual BCI devices requires extensive validation
+- Clinical applications must follow appropriate medical device development 
+  lifecycle processes (IEC 62304)
+
+### QUALITY MANAGEMENT
+- Users implementing this in medical device development must establish 
+  appropriate quality management systems (ISO 13485)
+- Risk management processes (ISO 14971) must be applied
+- Software lifecycle processes must be followed
+
+### NO WARRANTIES FOR SAFETY-CRITICAL USE
+While the MIT License provides the software "as is" without warranty, users 
+of safety-critical systems must understand that:
+
+- No warranty is provided for safety, reliability, or fitness for medical use
+- Users assume all responsibility for safety validation
+- Independent testing and verification are required
+- Professional engineering oversight is recommended
+
+### RECOMMENDED PRACTICES
+When using this software for safety-critical BCI systems:
+
+1. Conduct thorough hazard analysis
+2. Implement redundant safety mechanisms
+3. Perform extensive testing and validation
+4. Follow applicable medical device standards
+5. Maintain comprehensive documentation
+6. Establish proper change control processes
+7. Conduct regular safety reviews
+
+By using this software, you acknowledge that you understand these additional 
+responsibilities and agree to use the software in accordance with applicable 
+safety and regulatory requirements.
+
+For questions regarding safety-critical use or regulatory compliance, consult 
+with qualified regulatory affairs and clinical engineering professionals.

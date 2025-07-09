@@ -1,0 +1,310 @@
+name: CI/CD Pipeline for IV&V Framework
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run nightly safety verification at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  BUILD_TYPE: Release
+  QNX_TOOLCHAIN_PATH: /opt/qnx700
+
+jobs:
+  safety-analysis:
+    name: Safety Analysis and MISRA Compliance
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Static Analysis Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cppcheck clang-tidy
+        
+    - name: MISRA C++ Compliance Check
+      run: |
+        # Run MISRA compliance checks
+        cppcheck --enable=all --std=c++17 --addon=misra src/
+        
+    - name: Static Analysis with Clang-Tidy
+      run: |
+        # Configure clang-tidy for safety-critical code
+        clang-tidy src/**/*.cpp -checks='-*,cert-*,misc-*,performance-*,readability-*,security-*'
+        
+    - name: Upload Safety Analysis Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: safety-analysis-results
+        path: |
+          safety-analysis-report.txt
+          misra-compliance-report.txt
+
+  build-native:
+    name: Build Native Target
+    runs-on: ubuntu-latest
+    needs: safety-analysis
+    strategy:
+      matrix:
+        build_type: [Debug, Release]
+        
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential python3 python3-pip
+        pip3 install pytest pyyaml
+        
+    - name: Configure CMake
+      run: |
+        cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_TESTS=ON -DENABLE_COVERAGE=ON
+        
+    - name: Build Framework
+      run: |
+        cmake --build build --config ${{ matrix.build_type }} -j $(nproc)
+        
+    - name: Run Unit Tests
+      run: |
+        cd build
+        ctest --output-on-failure --verbose
+        
+    - name: Generate Coverage Report
+      if: matrix.build_type == 'Debug'
+      run: |
+        sudo apt-get install -y lcov
+        cd build
+        lcov --capture --directory . --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage_filtered.info
+        genhtml coverage_filtered.info --output-directory coverage_html
+        
+    - name: Upload Coverage to Codecov
+      if: matrix.build_type == 'Debug'
+      uses: codecov/codecov-action@v3
+      with:
+        file: build/coverage_filtered.info
+        flags: unittests
+        name: codecov-umbrella
+        
+    - name: Archive Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts-${{ matrix.build_type }}
+        path: |
+          build/lib/
+          build/bin/
+
+  build-qnx:
+    name: Build QNX Target
+    runs-on: ubuntu-latest
+    needs: safety-analysis
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    # Note: In a real environment, you would install QNX SDP here
+    - name: Setup QNX Environment (Simulated)
+      run: |
+        echo "QNX_HOST=/opt/qnx700/host/linux/x86_64" >> $GITHUB_ENV
+        echo "QNX_TARGET=/opt/qnx700/target/qnx7" >> $GITHUB_ENV
+        echo "QNX toolchain setup would happen here"
+        
+    - name: Configure CMake for QNX
+      run: |
+        # cmake -B build_qnx -DBUILD_QNX_TARGET=ON -DCMAKE_BUILD_TYPE=Release
+        echo "QNX build configuration would happen here"
+        
+    - name: Build for QNX
+      run: |
+        # cmake --build build_qnx --config Release -j $(nproc)
+        echo "QNX build would happen here"
+
+  fault-injection-tests:
+    name: Fault Injection Test Suite
+    runs-on: ubuntu-latest
+    needs: build-native
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts-Debug
+        path: build/
+        
+    - name: Setup Python Environment
+      run: |
+        pip3 install pytest pyyaml asyncio
+        
+    - name: Run Fault Injection Tests
+      run: |
+        # Make artifacts executable
+        chmod +x build/bin/*
+        # Run fault injection test suite
+        python3 scripts/test_orchestrator.py tests/fault_injection_suite.yaml \
+          --framework-path . \
+          --output-dir test_results \
+          --verbose
+          
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: fault-injection-test-results
+        path: test_results/
+
+  timing-analysis-tests:
+    name: Timing Analysis Test Suite
+    runs-on: ubuntu-latest
+    needs: build-native
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts-Release
+        path: build/
+        
+    - name: Setup Python Environment
+      run: |
+        pip3 install pytest pyyaml asyncio
+        
+    - name: Run Timing Analysis Tests
+      run: |
+        chmod +x build/bin/*
+        python3 scripts/test_orchestrator.py tests/timing_analysis_suite.yaml \
+          --framework-path . \
+          --output-dir test_results \
+          --verbose
+          
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: timing-analysis-test-results
+        path: test_results/
+
+  regression-tests:
+    name: Regression Test Suite
+    runs-on: ubuntu-latest
+    needs: build-native
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts-Release
+        path: build/
+        
+    - name: Setup Python Environment
+      run: |
+        pip3 install pytest pyyaml asyncio
+        
+    - name: Run Regression Tests
+      run: |
+        chmod +x build/bin/*
+        python3 scripts/test_orchestrator.py tests/regression_suite.yaml \
+          --framework-path . \
+          --output-dir test_results \
+          --verbose
+          
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: regression-test-results
+        path: test_results/
+
+  safety-verification:
+    name: Safety Property Verification
+    runs-on: ubuntu-latest
+    needs: [fault-injection-tests, timing-analysis-tests, regression-tests]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download All Test Results
+      uses: actions/download-artifact@v3
+      
+    - name: Aggregate Safety Analysis
+      run: |
+        python3 scripts/safety_aggregator.py \
+          --fault-injection-results fault-injection-test-results/ \
+          --timing-analysis-results timing-analysis-test-results/ \
+          --regression-results regression-test-results/ \
+          --safety-analysis-results safety-analysis-results/ \
+          --output safety-verification-report.json
+          
+    - name: Check Safety Compliance
+      run: |
+        python3 scripts/safety_compliance_check.py safety-verification-report.json
+        
+    - name: Upload Safety Verification Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: safety-verification-report
+        path: safety-verification-report.json
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: safety-verification
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Staging Environment
+      run: |
+        echo "Deploying to staging environment"
+        # Deployment commands would go here
+        
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: safety-verification
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Production Environment
+      run: |
+        echo "Deploying to production environment"
+        # Production deployment commands would go here
+        
+    - name: Notify Safety Team
+      run: |
+        echo "Notifying safety team of production deployment"
+        # Safety team notification would go here
+
+  nightly-safety-check:
+    name: Nightly Safety Verification
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run Extended Safety Verification
+      run: |
+        # Run extended safety verification suite
+        python3 scripts/extended_safety_verification.py
+        
+    - name: Generate Safety Report
+      run: |
+        python3 scripts/generate_safety_report.py
+        
+    - name: Send Safety Report
+      run: |
+        # Send safety report to compliance team
+        echo "Sending nightly safety report to compliance team"
