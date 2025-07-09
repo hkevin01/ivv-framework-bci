@@ -129,6 +129,7 @@ endif()
 
 # Unit tests (if directory exists and tests enabled)
 if(BUILD_TESTS AND EXISTS "${CMAKE_SOURCE_DIR}/tests")
+    enable_testing()
     add_subdirectory(tests)
 endif()
 
