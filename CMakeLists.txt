@@ -1,6 +1,39 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Project definition
+# Project de# Core framework sources (Phase 1)
+set(CORE_SOURCES
+    src/core/verifier.cpp
+    src/core/config_manager.cpp
+    src/core/logger.cpp
+    src/core/safety_monitor.cpp
+    src/qnx_integration/qnx_platform.cpp
+)
+
+# Fault injection sources (Phase 2)
+set(FAULT_INJECTION_SOURCES
+    src/fault_injection/fault_injector.cpp
+)
+
+# Check if fault injection directory exists
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/fault_injection")
+    list(APPEND CORE_SOURCES ${FAULT_INJECTION_SOURCES})
+    message(STATUS "Including fault injection module")
+endif()
+
+# Core framework headers
+set(CORE_HEADERS
+    src/core/verifier.h
+    src/core/config_manager.h
+    src/core/logger.h
+    src/core/safety_monitor.h
+    src/qnx_integration/qnx_platform.h
+)
+
+# Add fault injection headers if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/fault_injection")
+    list(APPEND CORE_HEADERS src/fault_injection/fault_injector.h)
+endif()
+
 project(IVVFrameworkBCI 
     VERSION 1.0.0
     DESCRIPTION "IV&V Framework for BCI Safety-Critical Systems"
@@ -48,23 +81,12 @@ endif()
 # Find required packages
 find_package(Threads REQUIRED)
 
-# Core framework source files (Phase 1)
-set(CORE_SOURCES
-    src/core/verifier.cpp
-    src/core/config_manager.cpp
-    src/core/logger.cpp
-    src/core/safety_monitor.cpp
-    src/qnx_integration/qnx_platform.cpp
-)
-
-# Core framework headers
-set(CORE_HEADERS
-    src/core/verifier.h
-    src/core/config_manager.h
-    src/core/logger.h
-    src/core/safety_monitor.h
-    src/qnx_integration/qnx_platform.h
-)
+# Add fault injection sources and headers if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/fault_injection")
+    list(APPEND CORE_SOURCES ${FAULT_INJECTION_SOURCES})
+    list(APPEND CORE_HEADERS src/fault_injection/fault_injector.h)
+    message(STATUS "Fault injection module added to build")
+endif()
 
 # Create core framework library
 add_library(ivv_core_framework STATIC
@@ -140,6 +162,13 @@ install(TARGETS ivv_framework ivv_core_framework
 install(FILES ${CORE_HEADERS}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ivv_framework
 )
+
+# Install fault injection headers if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/fault_injection")
+    install(FILES src/fault_injection/fault_injector.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ivv_framework/fault_injection
+    )
+endif()
 
 # Export configuration
 install(EXPORT IVVFrameworkTargets

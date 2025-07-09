@@ -74,8 +74,13 @@ public:
 };
 
 SafetyMonitor::SafetyMonitor() : pimpl_(std::make_unique<Impl>()) {
-  pimpl_->logger_ =
-      std::make_unique<Logger>(LogLevel::INFO, "safety_monitor.log");
+  pimpl_->logger_ = std::make_unique<Logger>();
+  LogConfig config;
+  config.min_level = LogLevel::INFO;
+  config.log_file_path = "safety_monitor.log";
+  config.destinations.push_back(LogDestination::FILE);
+  config.destinations.push_back(LogDestination::CONSOLE);
+  pimpl_->logger_->initialize("SafetyMonitor", config);
   pimpl_->logger_->log_info("SafetyMonitor created");
 }
 

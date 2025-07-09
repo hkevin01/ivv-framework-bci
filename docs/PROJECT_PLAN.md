@@ -17,7 +17,7 @@ Development of a comprehensive Independent Verification & Validation (IV&V) fram
 - [x] Core IV&V framework architecture
 - [x] Configuration management system
 - [x] Logging and tracing infrastructure
-- [ ] QNX RTOS integration layer
+- [x] QNX RTOS integration layer
 - [x] Basic API definitions
 
 ### Deliverables

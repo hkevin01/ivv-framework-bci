@@ -23,6 +23,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace IVVFramework {
 namespace Core {
@@ -31,13 +32,13 @@ namespace Core {
  * @brief Log severity levels for safety-critical systems
  */
 enum class LogLevel {
-  TRACE = 0,    ///< Detailed tracing information
-  DEBUG = 1,    ///< Debug information
-  INFO = 2,     ///< General information
-  WARNING = 3,  ///< Warning conditions
-  ERROR = 4,    ///< Error conditions
-  CRITICAL = 5, ///< Critical safety violations
-  FATAL = 6     ///< Fatal system errors
+  TRACE = 0,       ///< Detailed tracing information
+  DEBUG_LEVEL = 1, ///< Debug information
+  INFO = 2,        ///< General information
+  WARNING = 3,     ///< Warning conditions
+  ERROR_LEVEL = 4, ///< Error conditions
+  CRITICAL = 5,    ///< Critical safety violations
+  FATAL = 6        ///< Fatal system errors
 };
 
 /**

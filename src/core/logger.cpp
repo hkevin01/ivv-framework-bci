@@ -18,7 +18,9 @@
 #include <mutex>
 #include <queue>
 #include <sstream>
+#include <stdexcept>
 #include <thread>
+#include <vector>
 
 namespace IVVFramework {
 namespace Core {
@@ -60,7 +62,7 @@ public:
     if (entry.is_safety_critical) {
       statistics_.safety_critical_entries++;
     }
-    if (entry.level >= LogLevel::ERROR) {
+    if (entry.level >= LogLevel::ERROR_LEVEL) {
       statistics_.error_entries++;
     }
 
@@ -170,7 +172,7 @@ void Logger::log_trace(const std::string &message, const char *file_name,
 
 void Logger::log_debug(const std::string &message, const char *file_name,
                        int line_number, const char *function_name) {
-  log_message(LogLevel::DEBUG, message, "", file_name, line_number,
+  log_message(LogLevel::DEBUG_LEVEL, message, "", file_name, line_number,
               function_name);
 }
 
@@ -188,7 +190,7 @@ void Logger::log_warning(const std::string &message, const char *file_name,
 
 void Logger::log_error(const std::string &message, const char *file_name,
                        int line_number, const char *function_name) {
-  log_message(LogLevel::ERROR, message, "", file_name, line_number,
+  log_message(LogLevel::ERROR_LEVEL, message, "", file_name, line_number,
               function_name);
 }
 
@@ -342,13 +344,13 @@ std::string log_level_to_string(LogLevel level) {
   switch (level) {
   case LogLevel::TRACE:
     return "TRACE";
-  case LogLevel::DEBUG:
+  case LogLevel::DEBUG_LEVEL:
     return "DEBUG";
   case LogLevel::INFO:
     return "INFO";
   case LogLevel::WARNING:
     return "WARN";
-  case LogLevel::ERROR:
+  case LogLevel::ERROR_LEVEL:
     return "ERROR";
   case LogLevel::CRITICAL:
     return "CRITICAL";
@@ -363,13 +365,13 @@ LogLevel string_to_log_level(const std::string &level_str) {
   if (level_str == "TRACE")
     return LogLevel::TRACE;
   if (level_str == "DEBUG")
-    return LogLevel::DEBUG;
+    return LogLevel::DEBUG_LEVEL;
   if (level_str == "INFO")
     return LogLevel::INFO;
   if (level_str == "WARN" || level_str == "WARNING")
     return LogLevel::WARNING;
   if (level_str == "ERROR")
-    return LogLevel::ERROR;
+    return LogLevel::ERROR_LEVEL;
   if (level_str == "CRITICAL")
     return LogLevel::CRITICAL;
   if (level_str == "FATAL")
