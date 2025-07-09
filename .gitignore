@@ -1,0 +1,105 @@
+# IV&V Framework for BCI Safety-Critical Systems
+# Build artifacts
+build/
+bin/
+obj/
+*.o
+*.so
+*.dll
+*.exe
+*.a
+*.lib
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# C++
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.sbr
+*.bsc
+*.pch
+*.res
+*.idb
+*.dsp
+*.dsw
+*.ncb
+*.opt
+*.plg
+*.aps
+*.clw
+*.tmp
+*.log
+
+# QNX specific
+*.qnx
+*.elf
+*.map
+*.sym
+
+# IDE files
+.vscode/launch.json
+.vscode/settings.json
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Test results
+test_reports/
+coverage_reports/
+fault_injection_logs/
+timing_analysis_results/
+
+# Documentation build
+docs/_build/
+docs/html/
+docs/latex/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.orig
+
+# Configuration files with sensitive data
+config/local_*.yaml
+config/production_*.yaml
+*.key
+*.pem
+*.crt
+
+# Dependencies
+node_modules/
+vendor/
+third_party/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Conan (C++ package manager)
+conandata.yml
+conaninfo.txt
+conanbuildinfo.*
+
+# Safety-critical verification artifacts
+verification_traces/
+formal_proofs/
+model_checking_results/
+static_analysis_reports/
