@@ -166,7 +166,8 @@ void test_report_generation() {
   auto report = analyzer->generate_report(false);
 
   ASSERT_TRUE(!report.target_system.empty());
-  // Note: Analysis duration might be 0 for very fast operations, so we'll just check it's valid
+  // Note: Analysis duration might be 0 for very fast operations, so we'll just
+  // check it's valid
   ASSERT_TRUE(report.analysis_duration.count() >= 0);
 
   std::cout << "✓ Report generation test passed (target: "
