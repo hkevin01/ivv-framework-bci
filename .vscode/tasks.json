@@ -1,0 +1,64 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build IV&V Framework (Debug)",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/build.sh",
+            "args": [
+                "--build-type", "Debug",
+                "--verbose"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Build the IV&V Framework in Debug mode for safety-critical BCI systems"
+        },
+        {
+            "label": "Build IV&V Framework (Release)", 
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/build.sh",
+            "args": [
+                "--build-type", "Release",
+                "--verbose"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Build the IV&V Framework in Release mode for production deployment"
+        },
+        {
+            "label": "Run Unit Tests",
+            "type": "shell", 
+            "command": "cd ${workspaceFolder}/build && ctest --output-on-failure --verbose",
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "detail": "Run all unit tests for the IV&V Framework",
+            "dependsOn": "Build IV&V Framework (Debug)"
+        }
+    ]
+}
