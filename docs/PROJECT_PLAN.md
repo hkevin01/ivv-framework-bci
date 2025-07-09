@@ -1,4 +1,11 @@
-# IV&V Framework Project Plan
+# IV&V## Phase 1: Foundation (Weeks 1-4)
+### Core Framework Development
+- [x] Project structure and build system setup
+- [x] Core IV&V framework architecture
+- [x] Configuration management system
+- [x] Logging and tracing infrastructure
+- [x] QNX RTOS integration layer
+- [x] Basic API definitionsrk Project Plan
 # BCI Safety-Critical Systems Verification & Validation
 
 ## Project Overview

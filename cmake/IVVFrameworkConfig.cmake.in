@@ -1,0 +1,26 @@
+@PACKAGE_INIT@
+
+# IV&V Framework CMake Configuration
+# This file is used by find_package(IVVFramework)
+
+include(CMakeFindDependencyMacro)
+
+# Find required dependencies
+find_dependency(Threads)
+
+# Include the targets file
+include(${CMAKE_CURRENT_LIST_DIR}/IVVFrameworkTargets.cmake)
+
+# Set variables for compatibility
+set(IVVFramework_VERSION @PROJECT_VERSION@)
+set(IVVFramework_VERSION_MAJOR @PROJECT_VERSION_MAJOR@)
+set(IVVFramework_VERSION_MINOR @PROJECT_VERSION_MINOR@)
+set(IVVFramework_VERSION_PATCH @PROJECT_VERSION_PATCH@)
+
+# Define the components
+set(IVVFramework_COMPONENTS Core FaultInjection TimingAnalysis RegressionTesting QNXIntegration)
+
+# Set found status
+set(IVVFramework_FOUND TRUE)
+
+check_required_components(IVVFramework)

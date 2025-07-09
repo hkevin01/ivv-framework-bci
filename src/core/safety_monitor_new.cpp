@@ -16,8 +16,8 @@
  * All modifications must undergo safety analysis per IEC 62304.
  */
 
-#include "safety_monitor.h"
 #include "logger.h"
+#include "safety_monitor.h"
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -76,7 +76,7 @@ public:
 SafetyMonitor::SafetyMonitor() : pimpl_(std::make_unique<Impl>()) {
   pimpl_->logger_ =
       std::make_unique<Logger>(LogLevel::INFO, "safety_monitor.log");
-  pimpl_->logger_->log_info("SafetyMonitor created");
+  pimpl_->logger_->log(LogLevel::INFO, "SafetyMonitor created");
 }
 
 SafetyMonitor::~SafetyMonitor() {
@@ -84,16 +84,17 @@ SafetyMonitor::~SafetyMonitor() {
     stop_monitoring();
   }
 
-  pimpl_->logger_->log_info("SafetyMonitor destroyed. Total violations: " +
-                            std::to_string(pimpl_->violation_count_.load()));
+  pimpl_->logger_->log(LogLevel::INFO,
+                       "SafetyMonitor destroyed. Total violations: " +
+                           std::to_string(pimpl_->violation_count_.load()));
 }
 
 bool SafetyMonitor::initialize(const VerifierConfig &config) {
   std::lock_guard<std::mutex> lock(pimpl_->constraints_mutex_);
 
   if (pimpl_->is_monitoring_) {
-    pimpl_->logger_->log_warning(
-        "Cannot initialize while monitoring is active");
+    pimpl_->logger_->log(LogLevel::WARNING,
+                         "Cannot initialize while monitoring is active");
     return false;
   }
 
@@ -101,8 +102,9 @@ bool SafetyMonitor::initialize(const VerifierConfig &config) {
   pimpl_->violation_count_ = 0;
   pimpl_->recent_violations_.clear();
 
-  pimpl_->logger_->log_info("SafetyMonitor initialized for device: " +
-                            config.device_name);
+  pimpl_->logger_->log(LogLevel::INFO,
+                       "SafetyMonitor initialized for device: " +
+                           config.device_name);
   return true;
 }
 
@@ -110,26 +112,28 @@ bool SafetyMonitor::register_constraint(const SafetyConstraint &constraint) {
   std::lock_guard<std::mutex> lock(pimpl_->constraints_mutex_);
 
   if (!SafetyUtils::validate_safety_constraint(constraint)) {
-    pimpl_->logger_->log_error("Invalid safety constraint: " + constraint.name);
+    pimpl_->logger_->log(LogLevel::ERROR,
+                         "Invalid safety constraint: " + constraint.name);
     return false;
   }
 
   pimpl_->constraints_[constraint.name] = constraint;
-  pimpl_->logger_->log_info("Registered safety constraint: " + constraint.name);
+  pimpl_->logger_->log(LogLevel::INFO,
+                       "Registered safety constraint: " + constraint.name);
 
   return true;
 }
 
 SafetyResult SafetyMonitor::start_monitoring() {
   if (pimpl_->is_monitoring_) {
-    pimpl_->logger_->log_warning("SafetyMonitor already running");
+    pimpl_->logger_->log(LogLevel::WARNING, "SafetyMonitor already running");
     return SafetyResult::WARNING;
   }
 
   std::lock_guard<std::mutex> lock(pimpl_->constraints_mutex_);
 
   if (pimpl_->constraints_.empty()) {
-    pimpl_->logger_->log_error("No safety constraints registered");
+    pimpl_->logger_->log(LogLevel::ERROR, "No safety constraints registered");
     return SafetyResult::SYSTEM_FAILURE;
   }
 
@@ -143,7 +147,7 @@ SafetyResult SafetyMonitor::start_monitoring() {
   pimpl_->monitoring_thread_ =
       std::thread(&SafetyMonitor::Impl::monitoring_loop, pimpl_.get());
 
-  pimpl_->logger_->log_critical("Safety monitoring started");
+  pimpl_->logger_->log(LogLevel::CRITICAL, "Safety monitoring started");
   return SafetyResult::SAFE;
 }
 
@@ -159,7 +163,7 @@ SafetyResult SafetyMonitor::stop_monitoring() {
     pimpl_->monitoring_thread_.join();
   }
 
-  pimpl_->logger_->log_critical("Safety monitoring stopped");
+  pimpl_->logger_->log(LogLevel::CRITICAL, "Safety monitoring stopped");
   return SafetyResult::SAFE;
 }
 
@@ -199,7 +203,8 @@ SafetyMonitor::check_constraint(const std::string &constraint_name) {
 
   auto it = pimpl_->constraints_.find(constraint_name);
   if (it == pimpl_->constraints_.end()) {
-    pimpl_->logger_->log_error("Unknown constraint: " + constraint_name);
+    pimpl_->logger_->log(LogLevel::ERROR,
+                         "Unknown constraint: " + constraint_name);
     return SafetyResult::SYSTEM_FAILURE;
   }
 
@@ -220,8 +225,8 @@ SafetyMonitor::check_scenario_safety(const std::string &scenario_content) {
 
   for (const auto &keyword : dangerous_keywords) {
     if (scenario_content.find(keyword) != std::string::npos) {
-      pimpl_->logger_->log_warning("Scenario contains dangerous operation: " +
-                                   keyword);
+      pimpl_->logger_->log(LogLevel::WARNING,
+                           "Scenario contains dangerous operation: " + keyword);
       return SafetyResult::WARNING;
     }
   }
@@ -232,13 +237,13 @@ SafetyMonitor::check_scenario_safety(const std::string &scenario_content) {
 void SafetyMonitor::register_violation_callback(
     SafetyViolationCallback callback) {
   pimpl_->violation_callback_ = callback;
-  pimpl_->logger_->log_info("Safety violation callback registered");
+  pimpl_->logger_->log(LogLevel::INFO, "Safety violation callback registered");
 }
 
 void SafetyMonitor::register_emergency_stop_callback(
     EmergencyStopCallback callback) {
   pimpl_->emergency_stop_callback_ = callback;
-  pimpl_->logger_->log_info("Emergency stop callback registered");
+  pimpl_->logger_->log(LogLevel::INFO, "Emergency stop callback registered");
 }
 
 SafetyStatus SafetyMonitor::get_safety_status() const {
@@ -294,15 +299,16 @@ bool SafetyMonitor::is_system_safe() const {
 bool SafetyMonitor::acknowledge_violation(
     const std::string &violation_id, const std::string &acknowledgment_reason) {
 
-  pimpl_->logger_->log_info("Violation acknowledged: " + violation_id +
-                            " Reason: " + acknowledgment_reason);
+  pimpl_->logger_->log(LogLevel::INFO,
+                       "Violation acknowledged: " + violation_id +
+                           " Reason: " + acknowledgment_reason);
   return true;
 }
 
 bool SafetyMonitor::emergency_stop() noexcept {
   try {
     pimpl_->emergency_stop_active_ = true;
-    pimpl_->logger_->log_critical("EMERGENCY STOP ACTIVATED");
+    pimpl_->logger_->log(LogLevel::CRITICAL, "EMERGENCY STOP ACTIVATED");
 
     if (pimpl_->emergency_stop_callback_) {
       return pimpl_->emergency_stop_callback_();
@@ -320,7 +326,8 @@ bool SafetyMonitor::reset_after_emergency() {
   }
 
   pimpl_->emergency_stop_active_ = false;
-  pimpl_->logger_->log_critical("Emergency stop reset - system ready");
+  pimpl_->logger_->log(LogLevel::CRITICAL,
+                       "Emergency stop reset - system ready");
 
   return true;
 }
@@ -336,8 +343,9 @@ bool SafetyMonitor::set_constraint_enabled(const std::string &constraint_name,
 
   // Note: This implementation assumes constraints have an enabled flag
   // For simplicity, we'll just log the change
-  pimpl_->logger_->log_info("Constraint " + constraint_name +
-                            (enabled ? " enabled" : " disabled"));
+  pimpl_->logger_->log(LogLevel::INFO,
+                       "Constraint " + constraint_name +
+                           (enabled ? " enabled" : " disabled"));
 
   return true;
 }
@@ -359,8 +367,8 @@ bool SafetyMonitor::update_constraint_interval(
   }
 
   it->second.check_interval = interval;
-  pimpl_->logger_->log_info("Updated constraint interval for " +
-                            constraint_name);
+  pimpl_->logger_->log(LogLevel::INFO,
+                       "Updated constraint interval for " + constraint_name);
 
   return true;
 }
@@ -395,7 +403,7 @@ bool SafetyMonitor::is_monitoring_active() const noexcept {
 
 // Private implementation methods
 void SafetyMonitor::Impl::monitoring_loop() {
-  logger_->log_info("Safety monitoring loop started");
+  logger_->log(LogLevel::INFO, "Safety monitoring loop started");
 
   while (is_monitoring_) {
     auto start_time = std::chrono::steady_clock::now();
@@ -444,7 +452,7 @@ void SafetyMonitor::Impl::monitoring_loop() {
     }
   }
 
-  logger_->log_info("Safety monitoring loop ended");
+  logger_->log(LogLevel::INFO, "Safety monitoring loop ended");
 }
 
 void SafetyMonitor::Impl::record_violation(const SafetyViolation &violation) {
@@ -461,16 +469,16 @@ void SafetyMonitor::Impl::record_violation(const SafetyViolation &violation) {
   // Log violation
   std::string severity_str =
       SafetyUtils::safety_result_to_string(violation.severity);
-  logger_->log_critical("SAFETY VIOLATION [" + severity_str +
-                        "]: " + violation.constraint_name + " - " +
-                        violation.description);
+  logger_->log(LogLevel::CRITICAL, "SAFETY VIOLATION [" + severity_str +
+                                       "]: " + violation.constraint_name +
+                                       " - " + violation.description);
 
   // Execute callback if registered
   if (violation_callback_) {
     try {
       violation_callback_(violation);
     } catch (...) {
-      logger_->log_error("Exception in safety violation callback");
+      logger_->log(LogLevel::ERROR, "Exception in safety violation callback");
     }
   }
 }
@@ -485,7 +493,8 @@ SafetyResult SafetyMonitor::Impl::check_constraint_internal(
     // Default to safe if no check function provided
     return SafetyResult::SAFE;
   } catch (...) {
-    logger_->log_error("Exception during constraint check: " + constraint.name);
+    logger_->log(LogLevel::ERROR,
+                 "Exception during constraint check: " + constraint.name);
     return SafetyResult::SYSTEM_FAILURE;
   }
 }
